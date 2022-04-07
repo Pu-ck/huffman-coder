@@ -10,13 +10,13 @@ class Symbol
 	public:
 		std::vector<int> sequence;
 
-		double probabilty;
+		double probability;
 		char name;
 
 		Symbol(char x, double y)
 		{
 			name = x;
-			probabilty = y;
+			probability = y;
 		}
 };
 
@@ -25,19 +25,18 @@ class Branch
 {
 	public:
 		std::vector<Symbol*> elements_list;
-
-		double probabilty;
+		double probability;
 
 		Branch (double x)
 		{
-			probabilty = x;
+			probability = x;
 		}
 };
 
 // Sorting symbols by probabilty field
 bool sort_symbols_probability(const Symbol* symbol_first, const Symbol* symbol_second)
 {
-	return symbol_first->probabilty > symbol_second->probabilty;
+	return symbol_first->probability > symbol_second->probability;
 }
 
 // Sorting symbols by size of sequence field
@@ -47,7 +46,7 @@ bool sort_symbols_sequence(const Symbol* symbol_first, const Symbol* symbol_seco
 
 // Sorting branches by probabilty field
 bool sort_branches(const Branch* branch_first, const Branch* branch_second) {
-	return branch_first->probabilty < branch_second->probabilty;
+	return branch_first->probability < branch_second->probability;
 }
 
 // Main Huffman algorithm
@@ -55,7 +54,7 @@ void assign_codes(std::vector<Symbol*> symbols_list)
 {
 	using namespace std;
 
-	vector<double> probabilties_list;
+	vector<double> probabilities_list;
 	vector<Branch*> branch_list;
 
 	double min_first, min_second, sum;
@@ -64,9 +63,9 @@ void assign_codes(std::vector<Symbol*> symbols_list)
 	// Push each symbol into a new branch 
 	for (auto symbol : symbols_list) 
 	{
-		probabilties_list.push_back(symbol->probabilty);
-
-		Branch* branch = new Branch (symbol->probabilty);
+		probabilities_list.push_back(symbol->probability);
+		
+		Branch* branch = new Branch (symbol->probability);
 		branch->elements_list.push_back(symbol);
 
 		branch_list.push_back(branch);
@@ -75,24 +74,24 @@ void assign_codes(std::vector<Symbol*> symbols_list)
 	// Find two minimal probabilties and remove them from probabilties vector
 	for (int i = 0; i < symbols_list.size() - 1; i++) 
 	{
-		min_first = *min_element(probabilties_list.begin(), probabilties_list.end());
+		min_first = *min_element(probabilities_list.begin(), probabilities_list.end());
 
-		for (int i = 0; i < probabilties_list.size(); i++) 
+		for (int i = 0; i < probabilities_list.size(); i++)
 		{
-			if (probabilties_list[i] == min_first) 
+			if (probabilities_list[i] == min_first)
 			{
-				probabilties_list.erase(probabilties_list.begin() + i);
+				probabilities_list.erase(probabilities_list.begin() + i);
 				break;
 			}
 		}
 
-		min_second = *min_element(probabilties_list.begin(), probabilties_list.end());
+		min_second = *min_element(probabilities_list.begin(), probabilities_list.end());
 
-		for (int i = 0; i < probabilties_list.size(); i++)
+		for (int i = 0; i < probabilities_list.size(); i++)
 		{
-			if (probabilties_list[i] == min_second)
+			if (probabilities_list[i] == min_second)
 			{
-				probabilties_list.erase(probabilties_list.begin() + i);
+				probabilities_list.erase(probabilities_list.begin() + i);
 				break;
 			}
 		}
@@ -106,7 +105,7 @@ void assign_codes(std::vector<Symbol*> symbols_list)
 		// Sort vector with branches and remove redundant branches
 		for (auto branch : branch_list) 
 		{
-			if (branch->probabilty == min_first) 
+			if (branch->probability == min_first)
 			{
 				for (auto symbol : branch->elements_list) 
 				{
@@ -123,7 +122,7 @@ void assign_codes(std::vector<Symbol*> symbols_list)
 
 		for (auto branch : branch_list) 
 		{
-			if (branch->probabilty == min_second) 
+			if (branch->probability == min_second)
 			{
 				for (auto symbol : branch->elements_list) 
 				{
@@ -138,7 +137,7 @@ void assign_codes(std::vector<Symbol*> symbols_list)
 
 		// Update the vector of probabilties with a sum of previously found minimal probabilties and push new, concatenated branch into a vector of branches
 		branch_list.push_back(new_branch);
-		probabilties_list.push_back(sum);
+		probabilities_list.push_back(sum);
 	}
 
 	// Cleaning up memory
@@ -152,7 +151,7 @@ int main()
 {
 	using namespace std;
 
-	vector<double> probabilties_list;
+	vector<double> probabilities_list;
 	vector<char> excluded_letters;
 	vector<Symbol*> symbols_list;
 
@@ -199,10 +198,10 @@ int main()
 		cout << "\nProbabilties: \n";
 		for (auto symbol : symbols_list)
 		{
-			probabilties_list.push_back(symbol->probabilty);
+			probabilities_list.push_back(symbol->probability);
 			cout << setprecision(3);
 			cout << "'" << symbol->name << "'" << " -> ";
-			cout << symbol->probabilty << "\n";
+			cout << symbol->probability << "\n";
 		}
 
 		assign_codes(symbols_list);
@@ -221,8 +220,8 @@ int main()
 			}
 			cout << "\n";
 
-			average_length = average_length + (symbol->probabilty * symbol->sequence.size());
-			entropy = entropy + (symbol->probabilty * log2(1 / symbol->probabilty));
+			average_length = average_length + (symbol->probability * symbol->sequence.size());
+			entropy = entropy + (symbol->probability * log2(1 / symbol->probability));
 		}
 
 		cout << "\nEncoded message: \n";
@@ -250,7 +249,7 @@ int main()
 		entropy = 0;
 		sum = 0;
 
-		probabilties_list.clear();
+		probabilities_list.clear();
 		excluded_letters.clear();
 		symbols_list.clear();
 
