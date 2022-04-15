@@ -151,7 +151,6 @@ int main()
 {
 	using namespace std;
 
-	vector<double> probabilities_list;
 	vector<char> excluded_letters;
 	vector<Symbol*> symbols_list;
 
@@ -198,7 +197,6 @@ int main()
 		cout << "\nProbabilties: \n";
 		for (auto symbol : symbols_list)
 		{
-			probabilities_list.push_back(symbol->probability);
 			cout << setprecision(3);
 			cout << "'" << symbol->name << "'" << " -> ";
 			cout << symbol->probability << "\n";
@@ -249,7 +247,6 @@ int main()
 		entropy = 0;
 		sum = 0;
 
-		probabilities_list.clear();
 		excluded_letters.clear();
 		symbols_list.clear();
 
