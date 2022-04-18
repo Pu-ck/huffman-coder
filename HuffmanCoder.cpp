@@ -61,83 +61,89 @@ void assign_codes(std::vector<Symbol*> symbols_list)
 
 	// Create an additional vector with probabilty of each symbol
 	// Push each symbol into a new branch 
-	for (auto symbol : symbols_list) 
+	if (symbols_list.size() == 1)
 	{
-		probabilities_list.push_back(symbol->probability);
-		
-		Branch* branch = new Branch (symbol->probability);
-		branch->elements_list.push_back(symbol);
-
-		branch_list.push_back(branch);
+		symbols_list.at(0)->sequence.push_back(1);
 	}
-
-	// Find two minimal probabilties and remove them from probabilties vector
-	for (int i = 0; i < symbols_list.size() - 1; i++) 
+	else
 	{
-		min_first = *min_element(probabilities_list.begin(), probabilities_list.end());
-
-		for (int i = 0; i < probabilities_list.size(); i++)
+		for (auto symbol : symbols_list)
 		{
-			if (probabilities_list[i] == min_first)
-			{
-				probabilities_list.erase(probabilities_list.begin() + i);
-				break;
-			}
+			probabilities_list.push_back(symbol->probability);
+
+			Branch* branch = new Branch(symbol->probability);
+			branch->elements_list.push_back(symbol);
+
+			branch_list.push_back(branch);
 		}
 
-		min_second = *min_element(probabilities_list.begin(), probabilities_list.end());
-
-		for (int i = 0; i < probabilities_list.size(); i++)
+		// Find two minimal probabilties and remove them from probabilties vector
+		for (int i = 0; i < symbols_list.size() - 1; i++)
 		{
-			if (probabilities_list[i] == min_second)
-			{
-				probabilities_list.erase(probabilities_list.begin() + i);
-				break;
-			}
-		}
+			min_first = *min_element(probabilities_list.begin(), probabilities_list.end());
 
-		// Add minimal probabilties together and prepare a new branch 
-		sum = min_first + min_second;
-		Branch* new_branch = new Branch (sum);
-
-		// Push symbols from two branches (with probabilty fields equal to first and second minimal probabilties) into newly created branch
-		// Push 0 (smaller minimal value or first found) or 1 (bigger minimal value or second found) to sequence vector of symbols stored in each branch
-		// Sort vector with branches and remove redundant branches
-		for (auto branch : branch_list) 
-		{
-			if (branch->probability == min_first)
+			for (int i = 0; i < probabilities_list.size(); i++)
 			{
-				for (auto symbol : branch->elements_list) 
+				if (probabilities_list[i] == min_first)
 				{
-					new_branch->elements_list.push_back(symbol);
-					symbol->sequence.push_back(0);
+					probabilities_list.erase(probabilities_list.begin() + i);
+					break;
 				}
-
-				sort(branch_list.begin(), branch_list.end(), sort_branches);
-
-				branch_list.erase(branch_list.begin());
-				break;
 			}
-		}
 
-		for (auto branch : branch_list) 
-		{
-			if (branch->probability == min_second)
+			min_second = *min_element(probabilities_list.begin(), probabilities_list.end());
+
+			for (int i = 0; i < probabilities_list.size(); i++)
 			{
-				for (auto symbol : branch->elements_list) 
+				if (probabilities_list[i] == min_second)
 				{
-					new_branch->elements_list.push_back(symbol);
-					symbol->sequence.push_back(1);
+					probabilities_list.erase(probabilities_list.begin() + i);
+					break;
 				}
-
-				branch_list.erase(branch_list.begin());
-				break;
 			}
-		}
 
-		// Update the vector of probabilties with a sum of previously found minimal probabilties and push new, concatenated branch into a vector of branches
-		branch_list.push_back(new_branch);
-		probabilities_list.push_back(sum);
+			// Add minimal probabilties together and prepare a new branch 
+			sum = min_first + min_second;
+			Branch* new_branch = new Branch(sum);
+
+			// Push symbols from two branches (with probabilty fields equal to first and second minimal probabilties) into newly created branch
+			// Push 0 (smaller minimal value or first found) or 1 (bigger minimal value or second found) to sequence vector of symbols stored in each branch
+			// Sort vector with branches and remove redundant branches
+			for (auto branch : branch_list)
+			{
+				if (branch->probability == min_first)
+				{
+					for (auto symbol : branch->elements_list)
+					{
+						new_branch->elements_list.push_back(symbol);
+						symbol->sequence.push_back(0);
+					}
+
+					sort(branch_list.begin(), branch_list.end(), sort_branches);
+					branch_list.erase(branch_list.begin());
+					break;
+				}
+			}
+
+			for (auto branch : branch_list)
+			{
+				if (branch->probability == min_second)
+				{
+					for (auto symbol : branch->elements_list)
+					{
+						new_branch->elements_list.push_back(symbol);
+						symbol->sequence.push_back(1);
+					}
+
+					branch_list.erase(branch_list.begin());
+					break;
+				}
+			}
+
+			// Update the vector of probabilties with a sum of previously found minimal probabilties and push new, concatenated branch into a vector of branches
+			branch_list.push_back(new_branch);
+			probabilities_list.push_back(sum);
+		}
 	}
 
 	// Cleaning up memory
@@ -151,7 +157,6 @@ int main()
 {
 	using namespace std;
 
-	vector<double> probabilities_list;
 	vector<char> excluded_letters;
 	vector<Symbol*> symbols_list;
 
@@ -165,8 +170,17 @@ int main()
 
 	while (true) 
 	{
-		cout << "Type message to encode: ";
-		getline(cin, message);
+		do 
+		{
+			cout << "Type message to encode: ";
+			getline(cin, message);
+
+			if (message.size() < 1)
+			{
+				cout << "The message must be at least one character long." << endl;
+			}
+
+		} while (message.size() < 1);
 
 		// Determine probabilty for each symbol in input message
 		for (int i = 0; i < message.size(); i++)
@@ -198,7 +212,6 @@ int main()
 		cout << "\nProbabilties: \n";
 		for (auto symbol : symbols_list)
 		{
-			probabilities_list.push_back(symbol->probability);
 			cout << setprecision(3);
 			cout << "'" << symbol->name << "'" << " -> ";
 			cout << symbol->probability << "\n";
@@ -249,7 +262,6 @@ int main()
 		entropy = 0;
 		sum = 0;
 
-		probabilities_list.clear();
 		excluded_letters.clear();
 		symbols_list.clear();
 
