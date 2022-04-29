@@ -9,6 +9,7 @@ class Symbol
 {
 	public:
 		std::vector<int> sequence;
+		std::vector<int> sequence_negated;
 
 		double probability;
 		char name;
@@ -40,12 +41,14 @@ bool sort_symbols_probability(const Symbol* symbol_first, const Symbol* symbol_s
 }
 
 // Sorting symbols by size of sequence field
-bool sort_symbols_sequence(const Symbol* symbol_first, const Symbol* symbol_second) {
+bool sort_symbols_sequence(const Symbol* symbol_first, const Symbol* symbol_second) 
+{
 	return symbol_first->sequence.size() < symbol_second->sequence.size();
 }
 
 // Sorting branches by probabilty field
-bool sort_branches(const Branch* branch_first, const Branch* branch_second) {
+bool sort_branches(const Branch* branch_first, const Branch* branch_second) 
+{
 	return branch_first->probability < branch_second->probability;
 }
 
@@ -64,6 +67,7 @@ void assign_codes(std::vector<Symbol*> symbols_list)
 	if (symbols_list.size() == 1)
 	{
 		symbols_list.at(0)->sequence.push_back(1);
+		symbols_list.at(0)->sequence_negated.push_back(0);
 	}
 	else
 	{
@@ -78,11 +82,11 @@ void assign_codes(std::vector<Symbol*> symbols_list)
 		}
 
 		// Find two minimal probabilties and remove them from probabilties vector
-		for (int i = 0; i < symbols_list.size() - 1; i++)
+		for (size_t i = 0; i < symbols_list.size() - 1; i++)
 		{
 			min_first = *min_element(probabilities_list.begin(), probabilities_list.end());
 
-			for (int i = 0; i < probabilities_list.size(); i++)
+			for (size_t i = 0; i < probabilities_list.size(); i++)
 			{
 				if (probabilities_list[i] == min_first)
 				{
@@ -93,7 +97,7 @@ void assign_codes(std::vector<Symbol*> symbols_list)
 
 			min_second = *min_element(probabilities_list.begin(), probabilities_list.end());
 
-			for (int i = 0; i < probabilities_list.size(); i++)
+			for (size_t i = 0; i < probabilities_list.size(); i++)
 			{
 				if (probabilities_list[i] == min_second)
 				{
@@ -117,6 +121,7 @@ void assign_codes(std::vector<Symbol*> symbols_list)
 					{
 						new_branch->elements_list.push_back(symbol);
 						symbol->sequence.push_back(0);
+						symbol->sequence_negated.push_back(1);
 					}
 
 					sort(branch_list.begin(), branch_list.end(), sort_branches);
@@ -133,6 +138,7 @@ void assign_codes(std::vector<Symbol*> symbols_list)
 					{
 						new_branch->elements_list.push_back(symbol);
 						symbol->sequence.push_back(1);
+						symbol->sequence_negated.push_back(0);
 					}
 
 					branch_list.erase(branch_list.begin());
@@ -159,7 +165,6 @@ int main()
 
 	vector<char> excluded_letters;
 	vector<Symbol*> symbols_list;
-
 	string message;
 
 	double probability;
@@ -177,19 +182,19 @@ int main()
 
 			if (message.size() < 1)
 			{
-				cout << "The message must be at least one character long." << endl;
+				cout << "\nThe message must be at least one character long.\n\n";
 			}
 
 		} while (message.size() < 1);
 
 		// Determine probabilty for each symbol in input message
-		for (int i = 0; i < message.size(); i++)
+		for (size_t i = 0; i < message.size(); i++)
 		{
 			letter = message[i];
 
 			if (find(excluded_letters.begin(), excluded_letters.end(), letter) == excluded_letters.end())
 			{
-				for (int j = 0; j < message.size(); j++)
+				for (size_t j = 0; j < message.size(); j++)
 				{
 					if (message[j] == letter)
 					{
@@ -209,7 +214,7 @@ int main()
 
 		sort(symbols_list.begin(), symbols_list.end(), sort_symbols_probability);
 
-		cout << "\nProbabilties: \n";
+		cout << "\nProbabilities: \n";
 		for (auto symbol : symbols_list)
 		{
 			cout << setprecision(3);
@@ -226,11 +231,20 @@ int main()
 		{
 			// Each final sequence assigned to a symbol has to be reversed due to the direction of the tree search
 			reverse(symbol->sequence.begin(), symbol->sequence.end());
+			reverse(symbol->sequence_negated.begin(), symbol->sequence_negated.end());
 			cout << "'" << symbol->name << "' -> ";
 			for (int i : symbol->sequence)
 			{
 				cout << i << " ";
 			}
+
+			cout << "| ";
+
+			for (int i : symbol->sequence_negated)
+			{
+				cout << i << " ";
+			}
+
 			cout << "\n";
 
 			average_length = average_length + (symbol->probability * symbol->sequence.size());
@@ -238,7 +252,6 @@ int main()
 		}
 
 		cout << "\nEncoded message: \n";
-
 		for (char letter : message)
 		{
 			for (auto symbol : symbols_list)
@@ -246,6 +259,22 @@ int main()
 				if (symbol->name == letter)
 				{
 					for (int i : symbol->sequence)
+					{
+						cout << i << "";
+					}
+					cout << " ";
+				}
+			}
+		}
+
+		cout << "\n\nNegated message: \n";
+		for (char letter : message)
+		{
+			for (auto symbol : symbols_list)
+			{
+				if (symbol->name == letter)
+				{
+					for (int i : symbol->sequence_negated)
 					{
 						cout << i << "";
 					}
